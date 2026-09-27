@@ -47,6 +47,29 @@ def fs_string(value: str) -> str:
     return json.dumps(value, ensure_ascii=False)
 
 
+ASCII_TRANSLITERATIONS = {
+    "—": "-",  # em dash
+    "–": "-",  # en dash
+    "‘": "'",  # left single quote
+    "’": "'",  # right single quote
+    "“": '"',  # left double quote
+    "”": '"',  # right double quote
+    "…": "...",  # ellipsis
+}
+
+
+def ascii_annotation_description(text: str) -> str:
+    """Onshape's 'Description' annotation only allows printable ASCII."""
+    result = "".join(ASCII_TRANSLITERATIONS.get(ch, ch) for ch in text)
+    non_ascii = sorted({ch for ch in result if not ch.isascii()})
+    if non_ascii:
+        raise ValueError(
+            f"description {text!r} contains non-ASCII characters not in "
+            f"ASCII_TRANSLITERATIONS: {non_ascii!r}"
+        )
+    return result
+
+
 def check_bounds(p: Parameter, value: float) -> None:
     if not (p.minimum <= value <= p.maximum):
         raise ValueError(f"{p.name}: value {value} is outside its bounds [{p.minimum}, {p.maximum}]")
@@ -329,7 +352,7 @@ def generate(config: dict[str, Any], params: list[Parameter]) -> str:
             for p in inputs:
                 unit = UNIT_TO_FS[p.unit]
                 add(
-                    f'            annotation {{ "Name" : {fs_string(p.label)}, "Description" : {fs_string(p.description)} }}'
+                    f'            annotation {{ "Name" : {fs_string(p.label)}, "Description" : {fs_string(ascii_annotation_description(p.description))} }}'
                 )
                 add(
                     f"            isLength(definition.{p.name}, {{ ({unit}) : [{p.minimum}, {p.value}, {p.maximum}] }} as LengthBoundSpec);"
@@ -346,13 +369,13 @@ def generate(config: dict[str, Any], params: list[Parameter]) -> str:
         for p in params:
             if not p.derived:
                 add(
-                    f"        setVariable(context, {fs_string(p.name)}, definition.{p.name}, {fs_string(p.description)});"
+                    f"        setVariable(context, {fs_string(p.name)}, definition.{p.name}, {fs_string(ascii_annotation_description(p.description))});"
                 )
             else:
                 expression = emit_expression(p.expression or "", input_names, derived_seen)
                 add(f"        const {p.name} = {expression};")
                 add(
-                    f"        setVariable(context, {fs_string(p.name)}, {p.name}, {fs_string(p.description)});"
+                    f"        setVariable(context, {fs_string(p.name)}, {p.name}, {fs_string(ascii_annotation_description(p.description))});"
                 )
                 derived_seen.add(p.name)
         add("    });")
@@ -365,7 +388,7 @@ def generate(config: dict[str, Any], params: list[Parameter]) -> str:
         for p in params:
             unit = UNIT_TO_FS[p.unit]
             add(
-                f"        setVariable(context, {fs_string(p.name)}, {values[p.name]!r} * {unit}, {fs_string(p.description)});"
+                f"        setVariable(context, {fs_string(p.name)}, {values[p.name]!r} * {unit}, {fs_string(ascii_annotation_description(p.description))});"
             )
         add("    });")
     add("")
