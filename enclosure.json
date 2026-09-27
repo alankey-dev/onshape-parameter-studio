@@ -1,0 +1,437 @@
+{
+  "project": "ESP32 S3 E-Ink Enclosure",
+  "featurescript": {
+    "version": 2945,
+    "feature_name": "Enclosure Parameters",
+    "feature_id": "enclosureParameters",
+    "table_name": "Enclosure Parameters",
+    "table_id": "enclosureParameterTable"
+  },
+  "defaults": {
+    "unit": "mm",
+    "min": 0,
+    "max": 1000
+  },
+  "groups": [
+    {
+      "name": "Fit",
+      "collapsed": false,
+      "parameters": [
+        {
+          "name": "clearance",
+          "label": "General clearance",
+          "type": "length",
+          "value": 0,
+          "description": "General clearance between mating enclosure features."
+        },
+        {
+          "name": "press_fit_clearance",
+          "label": "Press fit clearance",
+          "type": "length",
+          "value": 0,
+          "description": "Clearance used for press fit features."
+        },
+        {
+          "name": "cutout_clearance",
+          "label": "Cutout clearance",
+          "type": "length",
+          "value": 0,
+          "description": "Default clearance added around external openings."
+        }
+      ]
+    },
+    {
+      "name": "Enclosure",
+      "parameters": [
+        {
+          "name": "wall",
+          "label": "Wall thickness",
+          "type": "length",
+          "value": 0,
+          "description": "Main enclosure wall thickness."
+        },
+        {
+          "name": "floor",
+          "label": "Floor thickness",
+          "type": "length",
+          "value": 0,
+          "description": "Base or floor thickness."
+        },
+        {
+          "name": "corner_radius",
+          "label": "Corner radius",
+          "type": "length",
+          "value": 0,
+          "description": "Outside enclosure corner radius."
+        }
+      ]
+    },
+    {
+      "name": "PCB",
+      "parameters": [
+        {
+          "name": "pcb_width",
+          "label": "PCB width",
+          "type": "length",
+          "value": 0,
+          "description": "Overall PCB width."
+        },
+        {
+          "name": "pcb_height",
+          "label": "PCB height",
+          "type": "length",
+          "value": 0,
+          "description": "Overall PCB height."
+        },
+        {
+          "name": "pcb_thickness",
+          "label": "PCB thickness",
+          "type": "length",
+          "value": 0,
+          "description": "PCB substrate thickness."
+        },
+        {
+          "name": "pcb_clearance",
+          "label": "PCB clearance",
+          "type": "length",
+          "value": 0,
+          "description": "Clearance around the PCB perimeter."
+        },
+        {
+          "name": "pcb_notch_width",
+          "label": "PCB notch width",
+          "type": "length",
+          "value": 0,
+          "description": "Width of the PCB locating or access notch."
+        },
+        {
+          "name": "pcb_notch_height",
+          "label": "PCB notch height",
+          "type": "length",
+          "value": 0,
+          "description": "Height of the PCB locating or access notch."
+        }
+      ]
+    },
+    {
+      "name": "Display",
+      "parameters": [
+        {
+          "name": "display_width",
+          "label": "Display width",
+          "type": "length",
+          "value": 0,
+          "description": "Overall physical display module width."
+        },
+        {
+          "name": "display_height",
+          "label": "Display height",
+          "type": "length",
+          "value": 0,
+          "description": "Overall physical display module height."
+        },
+        {
+          "name": "display_thickness",
+          "label": "Display thickness",
+          "type": "length",
+          "value": 0,
+          "description": "Overall physical display module thickness."
+        },
+        {
+          "name": "display_view_width",
+          "label": "Visible display width",
+          "type": "length",
+          "value": 0,
+          "description": "Width of the visible E-Ink area."
+        },
+        {
+          "name": "display_view_height",
+          "label": "Visible display height",
+          "type": "length",
+          "value": 0,
+          "description": "Height of the visible E-Ink area."
+        },
+        {
+          "name": "display_overlap",
+          "label": "Display overlap",
+          "type": "length",
+          "value": 0,
+          "description": "Amount of enclosure material overlapping the display edge."
+        },
+        {
+          "name": "display_cutout_width",
+          "label": "Display cutout width",
+          "type": "length",
+          "expression": "display_view_width + cutout_clearance * 2",
+          "description": "Calculated front opening width for the visible display."
+        },
+        {
+          "name": "display_cutout_height",
+          "label": "Display cutout height",
+          "type": "length",
+          "expression": "display_view_height + cutout_clearance * 2",
+          "description": "Calculated front opening height for the visible display."
+        }
+      ]
+    },
+    {
+      "name": "Buttons",
+      "parameters": [
+        {
+          "name": "button_diameter",
+          "label": "Button diameter",
+          "type": "length",
+          "value": 0,
+          "description": "Physical button diameter."
+        },
+        {
+          "name": "button_height",
+          "label": "Button height",
+          "type": "length",
+          "value": 0,
+          "description": "Physical button height."
+        },
+        {
+          "name": "button_spacing",
+          "label": "Button spacing",
+          "type": "length",
+          "value": 0,
+          "description": "Centre to centre spacing between the two buttons."
+        },
+        {
+          "name": "button_clearance",
+          "label": "Button clearance",
+          "type": "length",
+          "value": 0,
+          "description": "Radial clearance around a button opening."
+        },
+        {
+          "name": "button_cutout_diameter",
+          "label": "Button cutout diameter",
+          "type": "length",
+          "expression": "button_diameter + button_clearance * 2",
+          "description": "Calculated diameter of the enclosure button opening."
+        }
+      ]
+    },
+    {
+      "name": "Speaker",
+      "parameters": [
+        {
+          "name": "speaker_width",
+          "label": "Speaker width",
+          "type": "length",
+          "value": 0,
+          "description": "Overall speaker width."
+        },
+        {
+          "name": "speaker_height",
+          "label": "Speaker height",
+          "type": "length",
+          "value": 0,
+          "description": "Overall speaker height."
+        },
+        {
+          "name": "speaker_depth",
+          "label": "Speaker depth",
+          "type": "length",
+          "value": 0,
+          "description": "Overall speaker depth."
+        },
+        {
+          "name": "speaker_clearance",
+          "label": "Speaker clearance",
+          "type": "length",
+          "value": 0,
+          "description": "Clearance around the speaker opening or pocket."
+        },
+        {
+          "name": "speaker_cutout_width",
+          "label": "Speaker cutout width",
+          "type": "length",
+          "expression": "speaker_width + speaker_clearance * 2",
+          "description": "Calculated speaker opening width."
+        },
+        {
+          "name": "speaker_cutout_height",
+          "label": "Speaker cutout height",
+          "type": "length",
+          "expression": "speaker_height + speaker_clearance * 2",
+          "description": "Calculated speaker opening height."
+        }
+      ]
+    },
+    {
+      "name": "SD Card",
+      "parameters": [
+        {
+          "name": "sd_width",
+          "label": "SD slot width",
+          "type": "length",
+          "value": 0,
+          "description": "Physical width used for the SD card or socket opening."
+        },
+        {
+          "name": "sd_height",
+          "label": "SD slot height",
+          "type": "length",
+          "value": 0,
+          "description": "Physical height used for the SD card or socket opening."
+        },
+        {
+          "name": "sd_depth",
+          "label": "SD slot depth",
+          "type": "length",
+          "value": 0,
+          "description": "Depth of the SD socket or required insertion envelope."
+        },
+        {
+          "name": "sd_clearance",
+          "label": "SD clearance",
+          "type": "length",
+          "value": 0,
+          "description": "Clearance around the SD card opening."
+        },
+        {
+          "name": "sd_cutout_width",
+          "label": "SD cutout width",
+          "type": "length",
+          "expression": "sd_width + sd_clearance * 2",
+          "description": "Calculated SD card opening width."
+        },
+        {
+          "name": "sd_cutout_height",
+          "label": "SD cutout height",
+          "type": "length",
+          "expression": "sd_height + sd_clearance * 2",
+          "description": "Calculated SD card opening height."
+        }
+      ]
+    },
+    {
+      "name": "USB C",
+      "parameters": [
+        {
+          "name": "usb_width",
+          "label": "USB C width",
+          "type": "length",
+          "value": 0,
+          "description": "Physical USB C connector width."
+        },
+        {
+          "name": "usb_height",
+          "label": "USB C height",
+          "type": "length",
+          "value": 0,
+          "description": "Physical USB C connector height."
+        },
+        {
+          "name": "usb_depth",
+          "label": "USB C depth",
+          "type": "length",
+          "value": 0,
+          "description": "Connector depth or internal access envelope."
+        },
+        {
+          "name": "usb_clearance",
+          "label": "USB C clearance",
+          "type": "length",
+          "value": 0,
+          "description": "Clearance around the USB C opening."
+        },
+        {
+          "name": "usb_cutout_width",
+          "label": "USB C cutout width",
+          "type": "length",
+          "expression": "usb_width + usb_clearance * 2",
+          "description": "Calculated USB C enclosure opening width."
+        },
+        {
+          "name": "usb_cutout_height",
+          "label": "USB C cutout height",
+          "type": "length",
+          "expression": "usb_height + usb_clearance * 2",
+          "description": "Calculated USB C enclosure opening height."
+        }
+      ]
+    },
+    {
+      "name": "Case",
+      "parameters": [
+        {
+          "name": "case_width",
+          "label": "Case width",
+          "type": "length",
+          "expression": "pcb_width + pcb_clearance * 2 + wall * 2",
+          "description": "Calculated outside case width from the PCB envelope."
+        },
+        {
+          "name": "case_height",
+          "label": "Case height",
+          "type": "length",
+          "expression": "pcb_height + pcb_clearance * 2 + wall * 2",
+          "description": "Calculated outside case height from the PCB envelope."
+        },
+        {
+          "name": "case_depth",
+          "label": "Case depth",
+          "type": "length",
+          "value": 0,
+          "description": "Outside case depth. Kept as an input until the internal stack is defined."
+        }
+      ]
+    },
+    {
+      "name": "Lid",
+      "parameters": [
+        {
+          "name": "lid_depth",
+          "label": "Lid depth",
+          "type": "length",
+          "value": 0,
+          "description": "Overall lid thickness or depth."
+        },
+        {
+          "name": "lid_lip_depth",
+          "label": "Lid lip depth",
+          "type": "length",
+          "value": 0,
+          "description": "Depth of the locating lip extending into the case."
+        },
+        {
+          "name": "lid_lip_clearance",
+          "label": "Lid lip clearance",
+          "type": "length",
+          "expression": "clearance",
+          "description": "Calculated lid lip clearance using the general enclosure clearance."
+        }
+      ]
+    },
+    {
+      "name": "Fasteners",
+      "parameters": [
+        {
+          "name": "screw_diameter",
+          "label": "Screw diameter",
+          "type": "length",
+          "value": 0,
+          "description": "Nominal screw diameter."
+        },
+        {
+          "name": "screw_boss_diameter",
+          "label": "Screw boss diameter",
+          "type": "length",
+          "value": 0,
+          "description": "Outside diameter of a screw mounting boss."
+        },
+        {
+          "name": "screw_boss_height",
+          "label": "Screw boss height",
+          "type": "length",
+          "value": 0,
+          "description": "Height of a screw mounting boss."
+        }
+      ]
+    }
+  ]
+}
