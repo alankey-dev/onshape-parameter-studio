@@ -1,5 +1,7 @@
 # Onshape Parameter Studio
 
+[![CI](https://github.com/alankey-dev/onshape-parameter-studio/actions/workflows/ci.yml/badge.svg)](https://github.com/alankey-dev/onshape-parameter-studio/actions/workflows/ci.yml)
+
 A small generator + browser editor for turning a JSON parameter schema into an Onshape FeatureScript custom feature.
 
 ## Table of contents
@@ -13,6 +15,8 @@ A small generator + browser editor for turning a JSON parameter schema into an O
 - [JSON rules](#json-rules)
 - [Install in Onshape](#install-in-onshape)
 - [Example project](#example-project)
+- [Testing](#testing)
+- [Contributing](#contributing)
 - [License](#license)
 
 ## Features
@@ -128,6 +132,18 @@ The generator currently supports length variables because all parameters in this
 - X/Y positions (from the PCB's bottom-left corner) for the two buttons, the SD slot, and four PCB mounting screws — with the mounting screws accounting for the PCB's speaker notch rather than a naive symmetric 4-corner pattern
 - Four corner guide tabs that keep the display (smaller than the PCB) from shifting inside the case
 - `case_depth` computed from the actual internal stack-up instead of a fixed constant
+
+## Testing
+
+```bash
+python3 -m unittest discover -s tests -v
+```
+
+No third-party dependencies are needed for the tests either.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
