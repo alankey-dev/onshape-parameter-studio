@@ -41,31 +41,10 @@ const ENCLOSURE_PARAMETER_META = [
     },
     {
         "group" : "Enclosure",
-        "name" : "corner_radius_top",
-        "label" : "Top corner radius",
+        "name" : "corner_radius",
+        "label" : "Corner radius",
         "kind" : "Input",
-        "description" : "Outside corner radius at the case's narrow top end (near the display/buttons) — the egg's pointed end."
-    },
-    {
-        "group" : "Enclosure",
-        "name" : "corner_radius_bottom",
-        "label" : "Bottom corner radius",
-        "kind" : "Input",
-        "description" : "Outside corner radius at the case's full bottom end (near the USB-C port) — the egg's rounded base. Larger than corner_radius_top so the outline reads as egg-shaped rather than a uniform rounded rectangle."
-    },
-    {
-        "group" : "Enclosure",
-        "name" : "case_taper",
-        "label" : "Egg taper",
-        "kind" : "Input",
-        "description" : "How much narrower the case is at the top than at the bottom, giving the egg-shaped side taper. 0 keeps the sides parallel (a plain rounded rectangle)."
-    },
-    {
-        "group" : "Enclosure",
-        "name" : "wall_top",
-        "label" : "Wall thickness (top, effective)",
-        "kind" : "Derived",
-        "description" : "Side wall thickness left at the case's narrow top end once the egg taper is applied — the PCB/component pocket stays a constant-width rectangle, so only the outer wall gets thinner here. Keep this comfortably positive (roughly 1.2mm or more for FDM); if it gets too thin, reduce case_taper or increase wall."
+        "description" : "Outside enclosure corner radius."
     },
     {
         "group" : "PCB",
@@ -490,16 +469,9 @@ const ENCLOSURE_PARAMETER_META = [
     {
         "group" : "Case",
         "name" : "case_width",
-        "label" : "Case width (bottom)",
+        "label" : "Case width",
         "kind" : "Derived",
-        "description" : "Calculated outside case width at the bottom (full) end, from the largest internal component footprint."
-    },
-    {
-        "group" : "Case",
-        "name" : "case_width_top",
-        "label" : "Case width (top)",
-        "kind" : "Derived",
-        "description" : "Calculated outside case width at the top (narrow) end, using the egg taper."
+        "description" : "Calculated outside case width from the largest internal component footprint."
     },
     {
         "group" : "Case",
@@ -533,8 +505,8 @@ const ENCLOSURE_PARAMETER_META = [
         "group" : "Fasteners",
         "name" : "screw_boss_height",
         "label" : "Screw boss height",
-        "kind" : "Derived",
-        "description" : "Height of the corner bosses rising from the front housing floor that hold the PCB flush against the back of the display module (display_thickness + clearance). This is what actually supports the PCB — the screws only stop it lifting off the bosses."
+        "kind" : "Input",
+        "description" : "Height of a screw mounting boss."
     },
     {
         "group" : "Fasteners",
@@ -622,10 +594,7 @@ export const enclosureParameters = defineFeature(function(context is Context, id
         setVariable(context, "cutout_clearance", 0.2 * millimeter, "Default clearance added around external openings.");
         setVariable(context, "wall", 2 * millimeter, "Main enclosure wall thickness.");
         setVariable(context, "front_wall", 2 * millimeter, "Thickness of the case's front face, directly behind the display window.");
-        setVariable(context, "corner_radius_top", 5 * millimeter, "Outside corner radius at the case's narrow top end (near the display/buttons) — the egg's pointed end.");
-        setVariable(context, "corner_radius_bottom", 11 * millimeter, "Outside corner radius at the case's full bottom end (near the USB-C port) — the egg's rounded base. Larger than corner_radius_top so the outline reads as egg-shaped rather than a uniform rounded rectangle.");
-        setVariable(context, "case_taper", 2 * millimeter, "How much narrower the case is at the top than at the bottom, giving the egg-shaped side taper. 0 keeps the sides parallel (a plain rounded rectangle).");
-        setVariable(context, "wall_top", 1.0 * millimeter, "Side wall thickness left at the case's narrow top end once the egg taper is applied — the PCB/component pocket stays a constant-width rectangle, so only the outer wall gets thinner here. Keep this comfortably positive (roughly 1.2mm or more for FDM); if it gets too thin, reduce case_taper or increase wall.");
+        setVariable(context, "corner_radius", 6 * millimeter, "Outside enclosure corner radius.");
         setVariable(context, "pcb_width", 34.2 * millimeter, "Overall PCB width.");
         setVariable(context, "pcb_height", 47.7 * millimeter, "Overall PCB height.");
         setVariable(context, "pcb_thickness", 1 * millimeter, "Bare PCB substrate thickness (assembled stack with components is approximately 12mm).");
@@ -686,13 +655,12 @@ export const enclosureParameters = defineFeature(function(context is Context, id
         setVariable(context, "lid_depth", 2.5 * millimeter, "Overall lid thickness or depth.");
         setVariable(context, "lid_lip_depth", 1 * millimeter, "Depth of the locating lip extending into the case.");
         setVariable(context, "lid_lip_clearance", 0.1 * millimeter, "Calculated lid lip clearance using the general enclosure clearance.");
-        setVariable(context, "case_width", 39.0 * millimeter, "Calculated outside case width at the bottom (full) end, from the largest internal component footprint.");
-        setVariable(context, "case_width_top", 37.0 * millimeter, "Calculated outside case width at the top (narrow) end, using the egg taper.");
+        setVariable(context, "case_width", 39.0 * millimeter, "Calculated outside case width from the largest internal component footprint.");
         setVariable(context, "case_height", 54.4 * millimeter, "Calculated outside case height from the largest internal component footprint.");
         setVariable(context, "case_depth", 31.5 * millimeter, "Calculated case depth: front wall, display, PCB (assembled), battery, then the lid lip and lid. Buttons and SD card sit on the PCB and don't add depth; the speaker sits beside the PCB, not in the stack.");
         setVariable(context, "screw_diameter", 2 * millimeter, "Nominal screw diameter.");
         setVariable(context, "screw_boss_diameter", 4.3 * millimeter, "Outside diameter of a screw mounting boss.");
-        setVariable(context, "screw_boss_height", 3.9 * millimeter, "Height of the corner bosses rising from the front housing floor that hold the PCB flush against the back of the display module (display_thickness + clearance). This is what actually supports the PCB — the screws only stop it lifting off the bosses.");
+        setVariable(context, "screw_boss_height", 3.7 * millimeter, "Height of a screw mounting boss.");
         setVariable(context, "screw_inset_x", 3 * millimeter, "PLACEHOLDER — verify against the PCB layout. Horizontal inset of each mounting screw from the nearest PCB (or notch) edge.");
         setVariable(context, "screw_inset_y", 3 * millimeter, "PLACEHOLDER — verify against the PCB layout. Vertical inset of each mounting screw from the nearest PCB (or notch) edge.");
         setVariable(context, "screw_1_x", 3 * millimeter, "Bottom-left mounting screw, inset from the PCB's bottom-left corner.");
