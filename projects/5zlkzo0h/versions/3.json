@@ -290,21 +290,21 @@
           "label": "Button 1 X position",
           "type": "length",
           "value": 5,
-          "description": "PLACEHOLDER — verify against the PCB layout. X position of the first button's centre, measured from the PCB's bottom-left corner."
+          "description": "PLACEHOLDER \u2014 verify against the PCB layout. X position of the first button's centre, measured from the PCB's bottom-left corner."
         },
         {
           "name": "button_1_y",
           "label": "Button 1 Y position",
           "type": "length",
           "value": 5,
-          "description": "PLACEHOLDER — verify against the PCB layout. Y position of the first button's centre, measured from the PCB's bottom-left corner."
+          "description": "PLACEHOLDER \u2014 verify against the PCB layout. Y position of the first button's centre, measured from the PCB's bottom-left corner."
         },
         {
           "name": "button_2_x",
           "label": "Button 2 X position",
           "type": "length",
           "expression": "button_1_x + button_spacing",
-          "description": "Second button's X position, offset from button 1 by button_spacing (assumes the two buttons run along X — edit this expression if they actually run along Y)."
+          "description": "Second button's X position, offset from button 1 by button_spacing (assumes the two buttons run along X \u2014 edit this expression if they actually run along Y)."
         },
         {
           "name": "button_2_y",
@@ -318,7 +318,7 @@
           "label": "Plunger shaft diameter",
           "type": "length",
           "value": 3,
-          "description": "PLACEHOLDER — diameter of the 3D-printed button plunger shaft that passes through the case wall."
+          "description": "PLACEHOLDER \u2014 diameter of the 3D-printed button plunger shaft that passes through the case wall."
         },
         {
           "name": "plunger_clearance",
@@ -339,14 +339,14 @@
           "label": "Plunger head diameter",
           "type": "length",
           "value": 5,
-          "description": "PLACEHOLDER — diameter of the plunger's external cap (wider than the shaft so it can't fall through the case and gives a surface to press)."
+          "description": "PLACEHOLDER \u2014 diameter of the plunger's external cap (wider than the shaft so it can't fall through the case and gives a surface to press)."
         },
         {
           "name": "plunger_length",
           "label": "Plunger length",
           "type": "length",
           "value": 6,
-          "description": "PLACEHOLDER — total length of the plunger from the outer case face to where it contacts the PCB-mounted button."
+          "description": "PLACEHOLDER \u2014 total length of the plunger from the outer case face to where it contacts the PCB-mounted button."
         }
       ]
     },
@@ -433,14 +433,14 @@
           "label": "SD slot X position",
           "type": "length",
           "value": 5,
-          "description": "PLACEHOLDER — verify against the PCB layout. X position of the SD slot's centre, measured from the PCB's bottom-left corner."
+          "description": "PLACEHOLDER \u2014 verify against the PCB layout. X position of the SD slot's centre, measured from the PCB's bottom-left corner."
         },
         {
           "name": "sd_pos_y",
           "label": "SD slot Y position",
           "type": "length",
           "value": 5,
-          "description": "PLACEHOLDER — verify against the PCB layout. Y position of the SD slot's centre, measured from the PCB's bottom-left corner."
+          "description": "PLACEHOLDER \u2014 verify against the PCB layout. Y position of the SD slot's centre, measured from the PCB's bottom-left corner."
         },
         {
           "name": "sd_cutout_width",
@@ -586,14 +586,14 @@
           "label": "Screw inset X",
           "type": "length",
           "value": 3,
-          "description": "PLACEHOLDER — verify against the PCB layout. Horizontal inset of each mounting screw from the nearest PCB (or notch) edge."
+          "description": "PLACEHOLDER \u2014 verify against the PCB layout. Horizontal inset of each mounting screw from the nearest PCB (or notch) edge."
         },
         {
           "name": "screw_inset_y",
           "label": "Screw inset Y",
           "type": "length",
           "value": 3,
-          "description": "PLACEHOLDER — verify against the PCB layout. Vertical inset of each mounting screw from the nearest PCB (or notch) edge."
+          "description": "PLACEHOLDER \u2014 verify against the PCB layout. Vertical inset of each mounting screw from the nearest PCB (or notch) edge."
         },
         {
           "name": "screw_1_x",

@@ -159,6 +159,27 @@ const ENCLOSURE_PARAMETER_META = [
         "description" : "Calculated front opening height for the visible display."
     },
     {
+        "group" : "Display Guides",
+        "name" : "guide_width",
+        "label" : "Guide width",
+        "kind" : "Input",
+        "description" : "Width of each corner guide tab that stops the display (smaller than the PCB) from moving inside the case."
+    },
+    {
+        "group" : "Display Guides",
+        "name" : "guide_thickness",
+        "label" : "Guide thickness",
+        "kind" : "Input",
+        "description" : "How far each corner guide protrudes inward from the case wall to catch the display's edge."
+    },
+    {
+        "group" : "Display Guides",
+        "name" : "guide_height",
+        "label" : "Guide height",
+        "kind" : "Input",
+        "description" : "Height of each corner guide along the case depth."
+    },
+    {
         "group" : "Battery",
         "name" : "battery_width",
         "label" : "Battery width",
@@ -220,6 +241,69 @@ const ENCLOSURE_PARAMETER_META = [
         "label" : "Button cutout diameter",
         "kind" : "Derived",
         "description" : "Calculated diameter of the enclosure button opening."
+    },
+    {
+        "group" : "Buttons",
+        "name" : "button_1_x",
+        "label" : "Button 1 X position",
+        "kind" : "Input",
+        "description" : "PLACEHOLDER — verify against the PCB layout. X position of the first button's centre, measured from the PCB's bottom-left corner."
+    },
+    {
+        "group" : "Buttons",
+        "name" : "button_1_y",
+        "label" : "Button 1 Y position",
+        "kind" : "Input",
+        "description" : "PLACEHOLDER — verify against the PCB layout. Y position of the first button's centre, measured from the PCB's bottom-left corner."
+    },
+    {
+        "group" : "Buttons",
+        "name" : "button_2_x",
+        "label" : "Button 2 X position",
+        "kind" : "Derived",
+        "description" : "Second button's X position, offset from button 1 by button_spacing (assumes the two buttons run along X — edit this expression if they actually run along Y)."
+    },
+    {
+        "group" : "Buttons",
+        "name" : "button_2_y",
+        "label" : "Button 2 Y position",
+        "kind" : "Derived",
+        "description" : "Second button's Y position, level with button 1 (assumes the two buttons run along X)."
+    },
+    {
+        "group" : "Buttons",
+        "name" : "plunger_diameter",
+        "label" : "Plunger shaft diameter",
+        "kind" : "Input",
+        "description" : "PLACEHOLDER — diameter of the 3D-printed button plunger shaft that passes through the case wall."
+    },
+    {
+        "group" : "Buttons",
+        "name" : "plunger_clearance",
+        "label" : "Plunger clearance",
+        "kind" : "Input",
+        "description" : "Radial clearance between the plunger shaft and its hole in the case."
+    },
+    {
+        "group" : "Buttons",
+        "name" : "plunger_cutout_diameter",
+        "label" : "Plunger cutout diameter",
+        "kind" : "Derived",
+        "description" : "Calculated diameter of the plunger hole through the case wall."
+    },
+    {
+        "group" : "Buttons",
+        "name" : "plunger_head_diameter",
+        "label" : "Plunger head diameter",
+        "kind" : "Input",
+        "description" : "PLACEHOLDER — diameter of the plunger's external cap (wider than the shaft so it can't fall through the case and gives a surface to press)."
+    },
+    {
+        "group" : "Buttons",
+        "name" : "plunger_length",
+        "label" : "Plunger length",
+        "kind" : "Input",
+        "description" : "PLACEHOLDER — total length of the plunger from the outer case face to where it contacts the PCB-mounted button."
     },
     {
         "group" : "Speaker",
@@ -290,6 +374,20 @@ const ENCLOSURE_PARAMETER_META = [
         "label" : "SD clearance",
         "kind" : "Input",
         "description" : "Clearance around the SD card opening."
+    },
+    {
+        "group" : "SD Card",
+        "name" : "sd_pos_x",
+        "label" : "SD slot X position",
+        "kind" : "Input",
+        "description" : "PLACEHOLDER — verify against the PCB layout. X position of the SD slot's centre, measured from the PCB's bottom-left corner."
+    },
+    {
+        "group" : "SD Card",
+        "name" : "sd_pos_y",
+        "label" : "SD slot Y position",
+        "kind" : "Input",
+        "description" : "PLACEHOLDER — verify against the PCB layout. Y position of the SD slot's centre, measured from the PCB's bottom-left corner."
     },
     {
         "group" : "SD Card",
@@ -409,6 +507,76 @@ const ENCLOSURE_PARAMETER_META = [
         "label" : "Screw boss height",
         "kind" : "Input",
         "description" : "Height of a screw mounting boss."
+    },
+    {
+        "group" : "Fasteners",
+        "name" : "screw_inset_x",
+        "label" : "Screw inset X",
+        "kind" : "Input",
+        "description" : "PLACEHOLDER — verify against the PCB layout. Horizontal inset of each mounting screw from the nearest PCB (or notch) edge."
+    },
+    {
+        "group" : "Fasteners",
+        "name" : "screw_inset_y",
+        "label" : "Screw inset Y",
+        "kind" : "Input",
+        "description" : "PLACEHOLDER — verify against the PCB layout. Vertical inset of each mounting screw from the nearest PCB (or notch) edge."
+    },
+    {
+        "group" : "Fasteners",
+        "name" : "screw_1_x",
+        "label" : "Screw 1 X position (bottom-left)",
+        "kind" : "Derived",
+        "description" : "Bottom-left mounting screw, inset from the PCB's bottom-left corner."
+    },
+    {
+        "group" : "Fasteners",
+        "name" : "screw_1_y",
+        "label" : "Screw 1 Y position (bottom-left)",
+        "kind" : "Derived",
+        "description" : "Bottom-left mounting screw, inset from the PCB's bottom-left corner."
+    },
+    {
+        "group" : "Fasteners",
+        "name" : "screw_2_x",
+        "label" : "Screw 2 X position (bottom-right)",
+        "kind" : "Derived",
+        "description" : "Bottom-right mounting screw, inset from the PCB's bottom-right corner."
+    },
+    {
+        "group" : "Fasteners",
+        "name" : "screw_2_y",
+        "label" : "Screw 2 Y position (bottom-right)",
+        "kind" : "Derived",
+        "description" : "Bottom-right mounting screw, inset from the PCB's bottom-right corner."
+    },
+    {
+        "group" : "Fasteners",
+        "name" : "screw_3_x",
+        "label" : "Screw 3 X position (top-left, by notch)",
+        "kind" : "Derived",
+        "description" : "Top-left mounting screw, inset from the notch's left inner corner (the notch is centred on the PCB's top edge)."
+    },
+    {
+        "group" : "Fasteners",
+        "name" : "screw_3_y",
+        "label" : "Screw 3 Y position (top-left, by notch)",
+        "kind" : "Derived",
+        "description" : "Top-left mounting screw, inset from the notch's left inner corner."
+    },
+    {
+        "group" : "Fasteners",
+        "name" : "screw_4_x",
+        "label" : "Screw 4 X position (top-right, by notch)",
+        "kind" : "Derived",
+        "description" : "Top-right mounting screw, inset from the notch's right inner corner."
+    },
+    {
+        "group" : "Fasteners",
+        "name" : "screw_4_y",
+        "label" : "Screw 4 Y position (top-right, by notch)",
+        "kind" : "Derived",
+        "description" : "Top-right mounting screw, inset from the notch's right inner corner."
     }
 ];
 
@@ -443,6 +611,9 @@ export const enclosureParameters = defineFeature(function(context is Context, id
         setVariable(context, "display_clearance", 0.2 * millimeter, "Clearance around the display module footprint, used for case sizing.");
         setVariable(context, "display_cutout_width", 38.4 * millimeter, "Calculated front opening width for the visible display.");
         setVariable(context, "display_cutout_height", 38.4 * millimeter, "Calculated front opening height for the visible display.");
+        setVariable(context, "guide_width", 3 * millimeter, "Width of each corner guide tab that stops the display (smaller than the PCB) from moving inside the case.");
+        setVariable(context, "guide_thickness", 1 * millimeter, "How far each corner guide protrudes inward from the case wall to catch the display's edge.");
+        setVariable(context, "guide_height", 2 * millimeter, "Height of each corner guide along the case depth.");
         setVariable(context, "battery_width", 34.6 * millimeter, "Overall battery width.");
         setVariable(context, "battery_height", 50 * millimeter, "Overall battery height.");
         setVariable(context, "battery_thickness", 10 * millimeter, "Overall battery thickness.");
@@ -452,6 +623,15 @@ export const enclosureParameters = defineFeature(function(context is Context, id
         setVariable(context, "button_spacing", 10 * millimeter, "Centre to centre spacing between the two buttons.");
         setVariable(context, "button_clearance", 0.2 * millimeter, "Radial clearance around a button opening.");
         setVariable(context, "button_cutout_diameter", 2.5 * millimeter, "Calculated diameter of the enclosure button opening.");
+        setVariable(context, "button_1_x", 5 * millimeter, "PLACEHOLDER — verify against the PCB layout. X position of the first button's centre, measured from the PCB's bottom-left corner.");
+        setVariable(context, "button_1_y", 5 * millimeter, "PLACEHOLDER — verify against the PCB layout. Y position of the first button's centre, measured from the PCB's bottom-left corner.");
+        setVariable(context, "button_2_x", 15 * millimeter, "Second button's X position, offset from button 1 by button_spacing (assumes the two buttons run along X — edit this expression if they actually run along Y).");
+        setVariable(context, "button_2_y", 5 * millimeter, "Second button's Y position, level with button 1 (assumes the two buttons run along X).");
+        setVariable(context, "plunger_diameter", 3 * millimeter, "PLACEHOLDER — diameter of the 3D-printed button plunger shaft that passes through the case wall.");
+        setVariable(context, "plunger_clearance", 0.15 * millimeter, "Radial clearance between the plunger shaft and its hole in the case.");
+        setVariable(context, "plunger_cutout_diameter", 3.3 * millimeter, "Calculated diameter of the plunger hole through the case wall.");
+        setVariable(context, "plunger_head_diameter", 5 * millimeter, "PLACEHOLDER — diameter of the plunger's external cap (wider than the shaft so it can't fall through the case and gives a surface to press).");
+        setVariable(context, "plunger_length", 6 * millimeter, "PLACEHOLDER — total length of the plunger from the outer case face to where it contacts the PCB-mounted button.");
         setVariable(context, "speaker_width", 15 * millimeter, "Overall speaker width.");
         setVariable(context, "speaker_height", 11 * millimeter, "Overall speaker height.");
         setVariable(context, "speaker_depth", 4.5 * millimeter, "Overall speaker depth.");
@@ -462,6 +642,8 @@ export const enclosureParameters = defineFeature(function(context is Context, id
         setVariable(context, "sd_height", 2 * millimeter, "Physical height used for the SD card or socket opening.");
         setVariable(context, "sd_depth", 14.5 * millimeter, "Depth of the SD socket or required insertion envelope.");
         setVariable(context, "sd_clearance", 0.1 * millimeter, "Clearance around the SD card opening.");
+        setVariable(context, "sd_pos_x", 5 * millimeter, "PLACEHOLDER — verify against the PCB layout. X position of the SD slot's centre, measured from the PCB's bottom-left corner.");
+        setVariable(context, "sd_pos_y", 5 * millimeter, "PLACEHOLDER — verify against the PCB layout. Y position of the SD slot's centre, measured from the PCB's bottom-left corner.");
         setVariable(context, "sd_cutout_width", 14.2 * millimeter, "Calculated SD card opening width.");
         setVariable(context, "sd_cutout_height", 2.2 * millimeter, "Calculated SD card opening height.");
         setVariable(context, "usb_width", 9.5 * millimeter, "Physical USB C connector width.");
@@ -479,6 +661,16 @@ export const enclosureParameters = defineFeature(function(context is Context, id
         setVariable(context, "screw_diameter", 2 * millimeter, "Nominal screw diameter.");
         setVariable(context, "screw_boss_diameter", 4.3 * millimeter, "Outside diameter of a screw mounting boss.");
         setVariable(context, "screw_boss_height", 3.7 * millimeter, "Height of a screw mounting boss.");
+        setVariable(context, "screw_inset_x", 3 * millimeter, "PLACEHOLDER — verify against the PCB layout. Horizontal inset of each mounting screw from the nearest PCB (or notch) edge.");
+        setVariable(context, "screw_inset_y", 3 * millimeter, "PLACEHOLDER — verify against the PCB layout. Vertical inset of each mounting screw from the nearest PCB (or notch) edge.");
+        setVariable(context, "screw_1_x", 3 * millimeter, "Bottom-left mounting screw, inset from the PCB's bottom-left corner.");
+        setVariable(context, "screw_1_y", 3 * millimeter, "Bottom-left mounting screw, inset from the PCB's bottom-left corner.");
+        setVariable(context, "screw_2_x", 31.200000000000003 * millimeter, "Bottom-right mounting screw, inset from the PCB's bottom-right corner.");
+        setVariable(context, "screw_2_y", 3 * millimeter, "Bottom-right mounting screw, inset from the PCB's bottom-right corner.");
+        setVariable(context, "screw_3_x", 3.1000000000000014 * millimeter, "Top-left mounting screw, inset from the notch's left inner corner (the notch is centred on the PCB's top edge).");
+        setVariable(context, "screw_3_y", 39.0 * millimeter, "Top-left mounting screw, inset from the notch's left inner corner.");
+        setVariable(context, "screw_4_x", 31.1 * millimeter, "Top-right mounting screw, inset from the notch's right inner corner.");
+        setVariable(context, "screw_4_y", 39.0 * millimeter, "Top-right mounting screw, inset from the notch's right inner corner.");
     });
 
 annotation { "Table Type Name" : "Enclosure Parameters" }
