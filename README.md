@@ -131,4 +131,4 @@ The generator currently supports length variables because all parameters in this
 
 ## License
 
-No license file is currently included in this repository. All rights reserved by the author unless a license is added.
+[MIT](LICENSE)
