@@ -12,22 +12,9 @@ from pathlib import Path
 from typing import Any
 
 IDENTIFIER = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
-ALLOWED_AST = (
-    ast.Expression,
-    ast.BinOp,
-    ast.UnaryOp,
-    ast.Name,
-    ast.Constant,
-    ast.Add,
-    ast.Sub,
-    ast.Mult,
-    ast.Div,
-    ast.Mod,
-    ast.Pow,
-    ast.USub,
-    ast.UAdd,
-    ast.Load,
-)
+ALLOWED_BINOPS = (ast.Add, ast.Sub, ast.Mult, ast.Div, ast.Mod, ast.Pow)
+ALLOWED_UNARYOPS = (ast.USub, ast.UAdd)
+ALLOWED_CALLS = {"max", "min"}
 
 UNIT_TO_FS = {
     "mm": "millimeter",
@@ -41,7 +28,6 @@ UNIT_TO_FS = {
 @dataclass(frozen=True)
 class Parameter:
     group: str
-    collapsed: bool
     name: str
     label: str
     type: str
@@ -61,8 +47,17 @@ def fs_string(value: str) -> str:
     return json.dumps(value, ensure_ascii=False)
 
 
+def check_bounds(p: Parameter, value: float) -> None:
+    if not (p.minimum <= value <= p.maximum):
+        raise ValueError(f"{p.name}: value {value} is outside its bounds [{p.minimum}, {p.maximum}]")
+
+
 def load_config(path: Path) -> tuple[dict[str, Any], list[Parameter]]:
     config = json.loads(path.read_text(encoding="utf-8"))
+    return parse_config(config)
+
+
+def parse_config(config: dict[str, Any]) -> tuple[dict[str, Any], list[Parameter]]:
     defaults = config.get("defaults", {})
     default_unit = defaults.get("unit", "mm")
     default_min = defaults.get("min", 0)
@@ -73,7 +68,6 @@ def load_config(path: Path) -> tuple[dict[str, Any], list[Parameter]]:
 
     for group in config["groups"]:
         group_name = group["name"]
-        collapsed = group.get("collapsed", True)
         for raw in group.get("parameters", []):
             name = raw["name"]
             if not IDENTIFIER.fullmatch(name):
@@ -91,7 +85,6 @@ def load_config(path: Path) -> tuple[dict[str, Any], list[Parameter]]:
 
             parameter = Parameter(
                 group=group_name,
-                collapsed=collapsed,
                 name=name,
                 label=raw.get("label", name.replace("_", " ").title()),
                 type=raw.get("type", "length"),
@@ -108,22 +101,53 @@ def load_config(path: Path) -> tuple[dict[str, Any], list[Parameter]]:
                 )
             if parameter.unit not in UNIT_TO_FS:
                 raise ValueError(f"{name}: unsupported unit {parameter.unit!r}")
+            if parameter.value is not None:
+                check_bounds(parameter, parameter.value)
             params.append(parameter)
 
     validate_expressions(params)
     return config, params
 
 
+def validate_expression_node(node: ast.AST, expression: str, names: set[str]) -> None:
+    if isinstance(node, ast.Expression):
+        validate_expression_node(node.body, expression, names)
+    elif isinstance(node, ast.Name):
+        names.add(node.id)
+    elif isinstance(node, ast.Constant):
+        if isinstance(node.value, bool) or not isinstance(node.value, (int, float)):
+            raise ValueError(f"Only numeric constants are allowed: {expression}")
+    elif isinstance(node, ast.UnaryOp):
+        if not isinstance(node.op, ALLOWED_UNARYOPS):
+            raise ValueError(f"Unsupported unary operator in expression: {expression}")
+        validate_expression_node(node.operand, expression, names)
+    elif isinstance(node, ast.BinOp):
+        if not isinstance(node.op, ALLOWED_BINOPS):
+            raise ValueError(f"Unsupported operator in expression: {expression}")
+        validate_expression_node(node.left, expression, names)
+        validate_expression_node(node.right, expression, names)
+    elif isinstance(node, ast.Call):
+        if not isinstance(node.func, ast.Name) or node.func.id not in ALLOWED_CALLS:
+            raise ValueError(f"Unsupported function call in expression: {expression}")
+        if node.keywords:
+            raise ValueError(f"Keyword arguments are not allowed: {expression}")
+        if len(node.args) < 2:
+            raise ValueError(
+                f"{node.func.id}() requires 2 or more positional arguments: {expression}"
+            )
+        for arg in node.args:
+            validate_expression_node(arg, expression, names)
+    else:
+        raise ValueError(
+            f"Unsupported expression syntax {type(node).__name__}: {expression}"
+        )
+
+
 def expression_dependencies(expression: str) -> set[str]:
     tree = ast.parse(expression, mode="eval")
-    for node in ast.walk(tree):
-        if not isinstance(node, ALLOWED_AST):
-            raise ValueError(
-                f"Unsupported expression syntax {type(node).__name__}: {expression}"
-            )
-        if isinstance(node, ast.Constant) and not isinstance(node.value, (int, float)):
-            raise ValueError(f"Only numeric constants are allowed: {expression}")
-    return {node.id for node in ast.walk(tree) if isinstance(node, ast.Name)}
+    names: set[str] = set()
+    validate_expression_node(tree, expression, names)
+    return names
 
 
 def validate_expressions(params: list[Parameter]) -> None:
@@ -147,6 +171,57 @@ def validate_expressions(params: list[Parameter]) -> None:
                 f"Unresolved: {', '.join(sorted(unresolved))}"
             )
         resolved.add(p.name)
+
+
+BINARY_OPS = {
+    ast.Add: lambda a, b: a + b,
+    ast.Sub: lambda a, b: a - b,
+    ast.Mult: lambda a, b: a * b,
+    ast.Div: lambda a, b: a / b,
+    ast.Mod: lambda a, b: a % b,
+    ast.Pow: lambda a, b: a**b,
+}
+CALL_FUNCS = {"max": max, "min": min}
+
+
+def evaluate_expression(expression: str, values: dict[str, float]) -> float:
+    tree = ast.parse(expression, mode="eval")
+
+    def compute(node: ast.AST) -> float:
+        if isinstance(node, ast.Expression):
+            return compute(node.body)
+        if isinstance(node, ast.Name):
+            return values[node.id]
+        if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
+            return float(node.value)
+        if isinstance(node, ast.UnaryOp):
+            value = compute(node.operand)
+            return -value if isinstance(node.op, ast.USub) else value
+        if isinstance(node, ast.BinOp):
+            return BINARY_OPS[type(node.op)](compute(node.left), compute(node.right))
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
+            return CALL_FUNCS[node.func.id](*(compute(arg) for arg in node.args))
+        raise ValueError(f"Cannot evaluate expression node: {type(node).__name__}")
+
+    return compute(tree)
+
+
+def resolve_values(params: list[Parameter]) -> dict[str, float]:
+    values: dict[str, float] = {}
+    for p in params:
+        if p.derived:
+            value = evaluate_expression(p.expression or "", values)
+        else:
+            assert p.value is not None
+            value = p.value
+        check_bounds(p, value)
+        values[p.name] = value
+    return values
+
+
+def evaluate_config(config: dict[str, Any]) -> dict[str, float]:
+    _, params = parse_config(config)
+    return resolve_values(params)
 
 
 def emit_expression(expression: str, inputs: set[str], derived: set[str]) -> str:
@@ -176,6 +251,12 @@ def emit_expression(expression: str, inputs: set[str], derived: set[str]) -> str
                 ast.Pow: "^",
             }[type(node.op)]
             return f"({render(node.left)} {op} {render(node.right)})"
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
+            rendered_args = [render(arg) for arg in node.args]
+            result = rendered_args[0]
+            for arg in rendered_args[1:]:
+                result = f"{node.func.id}({result}, {arg})"
+            return result
         raise ValueError(f"Unsupported expression node: {type(node).__name__}")
 
     return render(tree)
@@ -188,13 +269,11 @@ def generate(config: dict[str, Any], params: list[Parameter]) -> str:
     feature_id = fs.get("feature_id", "enclosureParameters")
     table_name = fs.get("table_name", "Enclosure Parameters")
     table_id = fs.get("table_id", "enclosureParameterTable")
+    editable_dialog = bool(fs.get("editable_dialog", False))
 
     for identifier in (feature_id, table_id):
         if not IDENTIFIER.fullmatch(identifier):
             raise ValueError(f"Invalid exported FeatureScript identifier: {identifier!r}")
-
-    input_names = {p.name for p in params if not p.derived}
-    derived_seen: set[str] = set()
 
     lines: list[str] = []
     add = lines.append
@@ -220,56 +299,75 @@ def generate(config: dict[str, Any], params: list[Parameter]) -> str:
 
     add("annotation {")
     add(f'    "Feature Type Name" : {fs_string(feature_name)},')
-    add('    "Feature Type Description" : "Defines the enclosure parameters and exposes them as Part Studio variables."')
+    description = (
+        "Defines the enclosure parameters as editable inputs."
+        if editable_dialog
+        else "Sets the enclosure parameters as Part Studio variables. Edit values in the parameter"
+        " editor and regenerate rather than editing this feature's dialog."
+    )
+    add(f'    "Feature Type Description" : {fs_string(description)}')
     add("}")
     add(
         f"export const {feature_id} = defineFeature(function(context is Context, id is Id, definition is map)"
     )
-    add("    precondition")
-    add("    {")
 
-    for group in config["groups"]:
-        inputs = [
-            p for p in params if p.group == group["name"] and not p.derived
-        ]
-        if not inputs:
-            continue
-        collapsed = "true" if group.get("collapsed", True) else "false"
-        add(
-            f'        annotation {{ "Group Name" : {fs_string(group["name"])}, "Collapsed By Default" : {collapsed} }}'
-        )
-        add("        {")
-        for p in inputs:
-            unit = UNIT_TO_FS[p.unit]
+    if editable_dialog:
+        input_names = {p.name for p in params if not p.derived}
+        derived_seen: set[str] = set()
+
+        add("    precondition")
+        add("    {")
+        for group in config["groups"]:
+            inputs = [p for p in params if p.group == group["name"] and not p.derived]
+            if not inputs:
+                continue
+            collapsed = "true" if group.get("collapsed", True) else "false"
             add(
-                f'            annotation {{ "Name" : {fs_string(p.label)}, "Description" : {fs_string(p.description)} }}'
+                f'        annotation {{ "Group Name" : {fs_string(group["name"])}, "Collapsed By Default" : {collapsed} }}'
             )
-            add(
-                f"            isLength(definition.{p.name}, {{ ({unit}) : [{p.minimum}, {p.value}, {p.maximum}] }} as LengthBoundSpec);"
-            )
+            add("        {")
+            for p in inputs:
+                unit = UNIT_TO_FS[p.unit]
+                add(
+                    f'            annotation {{ "Name" : {fs_string(p.label)}, "Description" : {fs_string(p.description)} }}'
+                )
+                add(
+                    f"            isLength(definition.{p.name}, {{ ({unit}) : [{p.minimum}, {p.value}, {p.maximum}] }} as LengthBoundSpec);"
+                )
+                add("")
+            if lines[-1] == "":
+                lines.pop()
+            add("        }")
             add("")
         if lines[-1] == "":
             lines.pop()
-        add("        }")
-        add("")
-    if lines[-1] == "":
-        lines.pop()
-    add("    }")
-    add("    {")
-
-    for p in params:
-        if not p.derived:
+        add("    }")
+        add("    {")
+        for p in params:
+            if not p.derived:
+                add(
+                    f"        setVariable(context, {fs_string(p.name)}, definition.{p.name}, {fs_string(p.description)});"
+                )
+            else:
+                expression = emit_expression(p.expression or "", input_names, derived_seen)
+                add(f"        const {p.name} = {expression};")
+                add(
+                    f"        setVariable(context, {fs_string(p.name)}, {p.name}, {fs_string(p.description)});"
+                )
+                derived_seen.add(p.name)
+        add("    });")
+    else:
+        values = resolve_values(params)
+        add("    precondition")
+        add("    {")
+        add("    }")
+        add("    {")
+        for p in params:
+            unit = UNIT_TO_FS[p.unit]
             add(
-                f"        setVariable(context, {fs_string(p.name)}, definition.{p.name}, {fs_string(p.description)});"
+                f"        setVariable(context, {fs_string(p.name)}, {values[p.name]!r} * {unit}, {fs_string(p.description)});"
             )
-        else:
-            expression = emit_expression(p.expression or "", input_names, derived_seen)
-            add(f"        const {p.name} = {expression};")
-            add(
-                f"        setVariable(context, {fs_string(p.name)}, {p.name}, {fs_string(p.description)});"
-            )
-            derived_seen.add(p.name)
-    add("    });")
+        add("    });")
     add("")
 
     add(f'annotation {{ "Table Type Name" : {fs_string(table_name)} }}')

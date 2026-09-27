@@ -1,5 +1,5 @@
-FeatureScript 2945;
-import(path : "onshape/std/common.fs", version : "2945.0");
+FeatureScript 3083;
+import(path : "onshape/std/common.fs", version : "3083.0");
 
 // GENERATED FILE. Edit enclosure.json and run generate_featurescript.py.
 
@@ -65,7 +65,7 @@ const ENCLOSURE_PARAMETER_META = [
         "name" : "pcb_thickness",
         "label" : "PCB thickness",
         "kind" : "Input",
-        "description" : "PCB substrate thickness."
+        "description" : "Bare PCB substrate thickness (assembled stack with components is approximately 12mm)."
     },
     {
         "group" : "PCB",
@@ -132,6 +132,13 @@ const ENCLOSURE_PARAMETER_META = [
     },
     {
         "group" : "Display",
+        "name" : "display_clearance",
+        "label" : "Display clearance",
+        "kind" : "Input",
+        "description" : "Clearance around the display module footprint, used for case sizing."
+    },
+    {
+        "group" : "Display",
         "name" : "display_cutout_width",
         "label" : "Display cutout width",
         "kind" : "Derived",
@@ -143,6 +150,34 @@ const ENCLOSURE_PARAMETER_META = [
         "label" : "Display cutout height",
         "kind" : "Derived",
         "description" : "Calculated front opening height for the visible display."
+    },
+    {
+        "group" : "Battery",
+        "name" : "battery_width",
+        "label" : "Battery width",
+        "kind" : "Input",
+        "description" : "Overall battery width."
+    },
+    {
+        "group" : "Battery",
+        "name" : "battery_height",
+        "label" : "Battery height",
+        "kind" : "Input",
+        "description" : "Overall battery height."
+    },
+    {
+        "group" : "Battery",
+        "name" : "battery_thickness",
+        "label" : "Battery thickness",
+        "kind" : "Input",
+        "description" : "Overall battery thickness."
+    },
+    {
+        "group" : "Battery",
+        "name" : "battery_clearance",
+        "label" : "Battery clearance",
+        "kind" : "Input",
+        "description" : "Clearance around the battery footprint, used for case sizing."
     },
     {
         "group" : "Buttons",
@@ -310,14 +345,14 @@ const ENCLOSURE_PARAMETER_META = [
         "name" : "case_width",
         "label" : "Case width",
         "kind" : "Derived",
-        "description" : "Calculated outside case width from the PCB envelope."
+        "description" : "Calculated outside case width from the largest internal component footprint."
     },
     {
         "group" : "Case",
         "name" : "case_height",
         "label" : "Case height",
         "kind" : "Derived",
-        "description" : "Calculated outside case height from the PCB envelope."
+        "description" : "Calculated outside case height from the largest internal component footprint."
     },
     {
         "group" : "Case",
@@ -372,229 +407,70 @@ const ENCLOSURE_PARAMETER_META = [
 
 annotation {
     "Feature Type Name" : "Enclosure Parameters",
-    "Feature Type Description" : "Defines the enclosure parameters and exposes them as Part Studio variables."
+    "Feature Type Description" : "Sets the enclosure parameters as Part Studio variables. Edit values in the parameter editor and regenerate rather than editing this feature's dialog."
 }
 export const enclosureParameters = defineFeature(function(context is Context, id is Id, definition is map)
     precondition
     {
-        annotation { "Group Name" : "Fit", "Collapsed By Default" : false }
-        {
-            annotation { "Name" : "General clearance", "Description" : "General clearance between mating enclosure features." }
-            isLength(definition.clearance, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-
-            annotation { "Name" : "Press fit clearance", "Description" : "Clearance used for press fit features." }
-            isLength(definition.press_fit_clearance, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-
-            annotation { "Name" : "Cutout clearance", "Description" : "Default clearance added around external openings." }
-            isLength(definition.cutout_clearance, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-        }
-
-        annotation { "Group Name" : "Enclosure", "Collapsed By Default" : true }
-        {
-            annotation { "Name" : "Wall thickness", "Description" : "Main enclosure wall thickness." }
-            isLength(definition.wall, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-
-            annotation { "Name" : "Floor thickness", "Description" : "Base or floor thickness." }
-            isLength(definition.floor, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-
-            annotation { "Name" : "Corner radius", "Description" : "Outside enclosure corner radius." }
-            isLength(definition.corner_radius, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-        }
-
-        annotation { "Group Name" : "PCB", "Collapsed By Default" : true }
-        {
-            annotation { "Name" : "PCB width", "Description" : "Overall PCB width." }
-            isLength(definition.pcb_width, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-
-            annotation { "Name" : "PCB height", "Description" : "Overall PCB height." }
-            isLength(definition.pcb_height, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-
-            annotation { "Name" : "PCB thickness", "Description" : "PCB substrate thickness." }
-            isLength(definition.pcb_thickness, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-
-            annotation { "Name" : "PCB clearance", "Description" : "Clearance around the PCB perimeter." }
-            isLength(definition.pcb_clearance, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-
-            annotation { "Name" : "PCB notch width", "Description" : "Width of the PCB locating or access notch." }
-            isLength(definition.pcb_notch_width, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-
-            annotation { "Name" : "PCB notch height", "Description" : "Height of the PCB locating or access notch." }
-            isLength(definition.pcb_notch_height, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-        }
-
-        annotation { "Group Name" : "Display", "Collapsed By Default" : true }
-        {
-            annotation { "Name" : "Display width", "Description" : "Overall physical display module width." }
-            isLength(definition.display_width, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-
-            annotation { "Name" : "Display height", "Description" : "Overall physical display module height." }
-            isLength(definition.display_height, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-
-            annotation { "Name" : "Display thickness", "Description" : "Overall physical display module thickness." }
-            isLength(definition.display_thickness, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-
-            annotation { "Name" : "Visible display width", "Description" : "Width of the visible E-Ink area." }
-            isLength(definition.display_view_width, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-
-            annotation { "Name" : "Visible display height", "Description" : "Height of the visible E-Ink area." }
-            isLength(definition.display_view_height, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-
-            annotation { "Name" : "Display overlap", "Description" : "Amount of enclosure material overlapping the display edge." }
-            isLength(definition.display_overlap, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-        }
-
-        annotation { "Group Name" : "Buttons", "Collapsed By Default" : true }
-        {
-            annotation { "Name" : "Button diameter", "Description" : "Physical button diameter." }
-            isLength(definition.button_diameter, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-
-            annotation { "Name" : "Button height", "Description" : "Physical button height." }
-            isLength(definition.button_height, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-
-            annotation { "Name" : "Button spacing", "Description" : "Centre to centre spacing between the two buttons." }
-            isLength(definition.button_spacing, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-
-            annotation { "Name" : "Button clearance", "Description" : "Radial clearance around a button opening." }
-            isLength(definition.button_clearance, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-        }
-
-        annotation { "Group Name" : "Speaker", "Collapsed By Default" : true }
-        {
-            annotation { "Name" : "Speaker width", "Description" : "Overall speaker width." }
-            isLength(definition.speaker_width, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-
-            annotation { "Name" : "Speaker height", "Description" : "Overall speaker height." }
-            isLength(definition.speaker_height, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-
-            annotation { "Name" : "Speaker depth", "Description" : "Overall speaker depth." }
-            isLength(definition.speaker_depth, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-
-            annotation { "Name" : "Speaker clearance", "Description" : "Clearance around the speaker opening or pocket." }
-            isLength(definition.speaker_clearance, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-        }
-
-        annotation { "Group Name" : "SD Card", "Collapsed By Default" : true }
-        {
-            annotation { "Name" : "SD slot width", "Description" : "Physical width used for the SD card or socket opening." }
-            isLength(definition.sd_width, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-
-            annotation { "Name" : "SD slot height", "Description" : "Physical height used for the SD card or socket opening." }
-            isLength(definition.sd_height, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-
-            annotation { "Name" : "SD slot depth", "Description" : "Depth of the SD socket or required insertion envelope." }
-            isLength(definition.sd_depth, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-
-            annotation { "Name" : "SD clearance", "Description" : "Clearance around the SD card opening." }
-            isLength(definition.sd_clearance, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-        }
-
-        annotation { "Group Name" : "USB C", "Collapsed By Default" : true }
-        {
-            annotation { "Name" : "USB C width", "Description" : "Physical USB C connector width." }
-            isLength(definition.usb_width, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-
-            annotation { "Name" : "USB C height", "Description" : "Physical USB C connector height." }
-            isLength(definition.usb_height, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-
-            annotation { "Name" : "USB C depth", "Description" : "Connector depth or internal access envelope." }
-            isLength(definition.usb_depth, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-
-            annotation { "Name" : "USB C clearance", "Description" : "Clearance around the USB C opening." }
-            isLength(definition.usb_clearance, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-        }
-
-        annotation { "Group Name" : "Case", "Collapsed By Default" : true }
-        {
-            annotation { "Name" : "Case depth", "Description" : "Outside case depth. Kept as an input until the internal stack is defined." }
-            isLength(definition.case_depth, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-        }
-
-        annotation { "Group Name" : "Lid", "Collapsed By Default" : true }
-        {
-            annotation { "Name" : "Lid depth", "Description" : "Overall lid thickness or depth." }
-            isLength(definition.lid_depth, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-
-            annotation { "Name" : "Lid lip depth", "Description" : "Depth of the locating lip extending into the case." }
-            isLength(definition.lid_lip_depth, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-        }
-
-        annotation { "Group Name" : "Fasteners", "Collapsed By Default" : true }
-        {
-            annotation { "Name" : "Screw diameter", "Description" : "Nominal screw diameter." }
-            isLength(definition.screw_diameter, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-
-            annotation { "Name" : "Screw boss diameter", "Description" : "Outside diameter of a screw mounting boss." }
-            isLength(definition.screw_boss_diameter, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-
-            annotation { "Name" : "Screw boss height", "Description" : "Height of a screw mounting boss." }
-            isLength(definition.screw_boss_height, { (millimeter) : [0, 0, 1000] } as LengthBoundSpec);
-        }
     }
     {
-        setVariable(context, "clearance", definition.clearance, "General clearance between mating enclosure features.");
-        setVariable(context, "press_fit_clearance", definition.press_fit_clearance, "Clearance used for press fit features.");
-        setVariable(context, "cutout_clearance", definition.cutout_clearance, "Default clearance added around external openings.");
-        setVariable(context, "wall", definition.wall, "Main enclosure wall thickness.");
-        setVariable(context, "floor", definition.floor, "Base or floor thickness.");
-        setVariable(context, "corner_radius", definition.corner_radius, "Outside enclosure corner radius.");
-        setVariable(context, "pcb_width", definition.pcb_width, "Overall PCB width.");
-        setVariable(context, "pcb_height", definition.pcb_height, "Overall PCB height.");
-        setVariable(context, "pcb_thickness", definition.pcb_thickness, "PCB substrate thickness.");
-        setVariable(context, "pcb_clearance", definition.pcb_clearance, "Clearance around the PCB perimeter.");
-        setVariable(context, "pcb_notch_width", definition.pcb_notch_width, "Width of the PCB locating or access notch.");
-        setVariable(context, "pcb_notch_height", definition.pcb_notch_height, "Height of the PCB locating or access notch.");
-        setVariable(context, "display_width", definition.display_width, "Overall physical display module width.");
-        setVariable(context, "display_height", definition.display_height, "Overall physical display module height.");
-        setVariable(context, "display_thickness", definition.display_thickness, "Overall physical display module thickness.");
-        setVariable(context, "display_view_width", definition.display_view_width, "Width of the visible E-Ink area.");
-        setVariable(context, "display_view_height", definition.display_view_height, "Height of the visible E-Ink area.");
-        setVariable(context, "display_overlap", definition.display_overlap, "Amount of enclosure material overlapping the display edge.");
-        const display_cutout_width = (definition.display_view_width + (definition.cutout_clearance * 2));
-        setVariable(context, "display_cutout_width", display_cutout_width, "Calculated front opening width for the visible display.");
-        const display_cutout_height = (definition.display_view_height + (definition.cutout_clearance * 2));
-        setVariable(context, "display_cutout_height", display_cutout_height, "Calculated front opening height for the visible display.");
-        setVariable(context, "button_diameter", definition.button_diameter, "Physical button diameter.");
-        setVariable(context, "button_height", definition.button_height, "Physical button height.");
-        setVariable(context, "button_spacing", definition.button_spacing, "Centre to centre spacing between the two buttons.");
-        setVariable(context, "button_clearance", definition.button_clearance, "Radial clearance around a button opening.");
-        const button_cutout_diameter = (definition.button_diameter + (definition.button_clearance * 2));
-        setVariable(context, "button_cutout_diameter", button_cutout_diameter, "Calculated diameter of the enclosure button opening.");
-        setVariable(context, "speaker_width", definition.speaker_width, "Overall speaker width.");
-        setVariable(context, "speaker_height", definition.speaker_height, "Overall speaker height.");
-        setVariable(context, "speaker_depth", definition.speaker_depth, "Overall speaker depth.");
-        setVariable(context, "speaker_clearance", definition.speaker_clearance, "Clearance around the speaker opening or pocket.");
-        const speaker_cutout_width = (definition.speaker_width + (definition.speaker_clearance * 2));
-        setVariable(context, "speaker_cutout_width", speaker_cutout_width, "Calculated speaker opening width.");
-        const speaker_cutout_height = (definition.speaker_height + (definition.speaker_clearance * 2));
-        setVariable(context, "speaker_cutout_height", speaker_cutout_height, "Calculated speaker opening height.");
-        setVariable(context, "sd_width", definition.sd_width, "Physical width used for the SD card or socket opening.");
-        setVariable(context, "sd_height", definition.sd_height, "Physical height used for the SD card or socket opening.");
-        setVariable(context, "sd_depth", definition.sd_depth, "Depth of the SD socket or required insertion envelope.");
-        setVariable(context, "sd_clearance", definition.sd_clearance, "Clearance around the SD card opening.");
-        const sd_cutout_width = (definition.sd_width + (definition.sd_clearance * 2));
-        setVariable(context, "sd_cutout_width", sd_cutout_width, "Calculated SD card opening width.");
-        const sd_cutout_height = (definition.sd_height + (definition.sd_clearance * 2));
-        setVariable(context, "sd_cutout_height", sd_cutout_height, "Calculated SD card opening height.");
-        setVariable(context, "usb_width", definition.usb_width, "Physical USB C connector width.");
-        setVariable(context, "usb_height", definition.usb_height, "Physical USB C connector height.");
-        setVariable(context, "usb_depth", definition.usb_depth, "Connector depth or internal access envelope.");
-        setVariable(context, "usb_clearance", definition.usb_clearance, "Clearance around the USB C opening.");
-        const usb_cutout_width = (definition.usb_width + (definition.usb_clearance * 2));
-        setVariable(context, "usb_cutout_width", usb_cutout_width, "Calculated USB C enclosure opening width.");
-        const usb_cutout_height = (definition.usb_height + (definition.usb_clearance * 2));
-        setVariable(context, "usb_cutout_height", usb_cutout_height, "Calculated USB C enclosure opening height.");
-        const case_width = ((definition.pcb_width + (definition.pcb_clearance * 2)) + (definition.wall * 2));
-        setVariable(context, "case_width", case_width, "Calculated outside case width from the PCB envelope.");
-        const case_height = ((definition.pcb_height + (definition.pcb_clearance * 2)) + (definition.wall * 2));
-        setVariable(context, "case_height", case_height, "Calculated outside case height from the PCB envelope.");
-        setVariable(context, "case_depth", definition.case_depth, "Outside case depth. Kept as an input until the internal stack is defined.");
-        setVariable(context, "lid_depth", definition.lid_depth, "Overall lid thickness or depth.");
-        setVariable(context, "lid_lip_depth", definition.lid_lip_depth, "Depth of the locating lip extending into the case.");
-        const lid_lip_clearance = definition.clearance;
-        setVariable(context, "lid_lip_clearance", lid_lip_clearance, "Calculated lid lip clearance using the general enclosure clearance.");
-        setVariable(context, "screw_diameter", definition.screw_diameter, "Nominal screw diameter.");
-        setVariable(context, "screw_boss_diameter", definition.screw_boss_diameter, "Outside diameter of a screw mounting boss.");
-        setVariable(context, "screw_boss_height", definition.screw_boss_height, "Height of a screw mounting boss.");
+        setVariable(context, "clearance", 0.1 * millimeter, "General clearance between mating enclosure features.");
+        setVariable(context, "press_fit_clearance", 0.1 * millimeter, "Clearance used for press fit features.");
+        setVariable(context, "cutout_clearance", 0.2 * millimeter, "Default clearance added around external openings.");
+        setVariable(context, "wall", 2 * millimeter, "Main enclosure wall thickness.");
+        setVariable(context, "floor", 2 * millimeter, "Base or floor thickness.");
+        setVariable(context, "corner_radius", 6 * millimeter, "Outside enclosure corner radius.");
+        setVariable(context, "pcb_width", 34.2 * millimeter, "Overall PCB width.");
+        setVariable(context, "pcb_height", 47.7 * millimeter, "Overall PCB height.");
+        setVariable(context, "pcb_thickness", 1 * millimeter, "Bare PCB substrate thickness (assembled stack with components is approximately 12mm).");
+        setVariable(context, "pcb_clearance", 0.2 * millimeter, "Clearance around the PCB perimeter.");
+        setVariable(context, "pcb_notch_width", 22 * millimeter, "Width of the PCB locating or access notch.");
+        setVariable(context, "pcb_notch_height", 5.7 * millimeter, "Height of the PCB locating or access notch.");
+        setVariable(context, "display_width", 31.8 * millimeter, "Overall physical display module width.");
+        setVariable(context, "display_height", 39 * millimeter, "Overall physical display module height.");
+        setVariable(context, "display_thickness", 3.8 * millimeter, "Overall physical display module thickness.");
+        setVariable(context, "display_view_width", 38 * millimeter, "Width of the visible E-Ink area.");
+        setVariable(context, "display_view_height", 38 * millimeter, "Height of the visible E-Ink area.");
+        setVariable(context, "display_overlap", 2 * millimeter, "Amount of enclosure material overlapping the display edge.");
+        setVariable(context, "display_clearance", 0.2 * millimeter, "Clearance around the display module footprint, used for case sizing.");
+        setVariable(context, "display_cutout_width", 38.4 * millimeter, "Calculated front opening width for the visible display.");
+        setVariable(context, "display_cutout_height", 38.4 * millimeter, "Calculated front opening height for the visible display.");
+        setVariable(context, "battery_width", 34.6 * millimeter, "Overall battery width.");
+        setVariable(context, "battery_height", 50 * millimeter, "Overall battery height.");
+        setVariable(context, "battery_thickness", 10 * millimeter, "Overall battery thickness.");
+        setVariable(context, "battery_clearance", 0.2 * millimeter, "Clearance around the battery footprint, used for case sizing.");
+        setVariable(context, "button_diameter", 2.1 * millimeter, "Physical button diameter.");
+        setVariable(context, "button_height", 2 * millimeter, "Physical button height.");
+        setVariable(context, "button_spacing", 10 * millimeter, "Centre to centre spacing between the two buttons.");
+        setVariable(context, "button_clearance", 0.2 * millimeter, "Radial clearance around a button opening.");
+        setVariable(context, "button_cutout_diameter", 2.5 * millimeter, "Calculated diameter of the enclosure button opening.");
+        setVariable(context, "speaker_width", 15 * millimeter, "Overall speaker width.");
+        setVariable(context, "speaker_height", 11 * millimeter, "Overall speaker height.");
+        setVariable(context, "speaker_depth", 4.5 * millimeter, "Overall speaker depth.");
+        setVariable(context, "speaker_clearance", 0.15 * millimeter, "Clearance around the speaker opening or pocket.");
+        setVariable(context, "speaker_cutout_width", 15.3 * millimeter, "Calculated speaker opening width.");
+        setVariable(context, "speaker_cutout_height", 11.3 * millimeter, "Calculated speaker opening height.");
+        setVariable(context, "sd_width", 14 * millimeter, "Physical width used for the SD card or socket opening.");
+        setVariable(context, "sd_height", 2 * millimeter, "Physical height used for the SD card or socket opening.");
+        setVariable(context, "sd_depth", 14.5 * millimeter, "Depth of the SD socket or required insertion envelope.");
+        setVariable(context, "sd_clearance", 0.1 * millimeter, "Clearance around the SD card opening.");
+        setVariable(context, "sd_cutout_width", 14.2 * millimeter, "Calculated SD card opening width.");
+        setVariable(context, "sd_cutout_height", 2.2 * millimeter, "Calculated SD card opening height.");
+        setVariable(context, "usb_width", 9.5 * millimeter, "Physical USB C connector width.");
+        setVariable(context, "usb_height", 3.7 * millimeter, "Physical USB C connector height.");
+        setVariable(context, "usb_depth", 6 * millimeter, "Connector depth or internal access envelope.");
+        setVariable(context, "usb_clearance", 0.1 * millimeter, "Clearance around the USB C opening.");
+        setVariable(context, "usb_cutout_width", 9.7 * millimeter, "Calculated USB C enclosure opening width.");
+        setVariable(context, "usb_cutout_height", 3.9000000000000004 * millimeter, "Calculated USB C enclosure opening height.");
+        setVariable(context, "case_width", 39.0 * millimeter, "Calculated outside case width from the largest internal component footprint.");
+        setVariable(context, "case_height", 54.4 * millimeter, "Calculated outside case height from the largest internal component footprint.");
+        setVariable(context, "case_depth", 0 * millimeter, "Outside case depth. Kept as an input until the internal stack is defined.");
+        setVariable(context, "lid_depth", 2.5 * millimeter, "Overall lid thickness or depth.");
+        setVariable(context, "lid_lip_depth", 1 * millimeter, "Depth of the locating lip extending into the case.");
+        setVariable(context, "lid_lip_clearance", 0.1 * millimeter, "Calculated lid lip clearance using the general enclosure clearance.");
+        setVariable(context, "screw_diameter", 2 * millimeter, "Nominal screw diameter.");
+        setVariable(context, "screw_boss_diameter", 4.3 * millimeter, "Outside diameter of a screw mounting boss.");
+        setVariable(context, "screw_boss_height", 3.7 * millimeter, "Height of a screw mounting boss.");
     });
 
 annotation { "Table Type Name" : "Enclosure Parameters" }

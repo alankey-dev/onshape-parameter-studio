@@ -1,0 +1,8 @@
+services:
+  featurescript-studio:
+    build: .
+    ports:
+      - "8765:8765"
+    volumes:
+      - ./projects:/app/projects
+    restart: unless-stopped

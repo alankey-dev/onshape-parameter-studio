@@ -1,0 +1,6 @@
+.git
+__pycache__
+*.pyc
+projects
+enclosure.json
+enclosure_parameters.fs

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FeatureScript Parameter Studio</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/javascript.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+<style type="text/tailwindcss">
+  @layer components {
+    .btn { @apply px-3 py-1.5 rounded-md text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed; }
+    .btn-primary { @apply btn bg-indigo-600 text-white hover:bg-indigo-500; }
+    .btn-secondary { @apply btn bg-slate-200 text-slate-800 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600; }
+    .btn-ghost { @apply btn border border-dashed border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:border-indigo-400 hover:text-indigo-500; }
+    .btn-icon { @apply p-1.5 rounded-md text-slate-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950; }
+    .field { @apply w-full h-8 appearance-none rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2 py-1 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500; }
+    .field-label { @apply block text-[11px] font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500 mb-0.5; }
+    .cell-input { @apply w-full h-7 appearance-none bg-transparent border-0 rounded px-1 py-0.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-slate-900; }
+    select.field, select.cell-input {
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%2394a3b8' stroke-width='1.5'><path d='M6 8l4 4 4-4'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 0.4rem center;
+      background-size: 1rem;
+      padding-right: 1.6rem;
+    }
+    .card { @apply bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm; }
+    .seg-btn { @apply px-2 py-1 text-xs font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800; }
+    .seg-btn-active { @apply bg-indigo-600 text-white hover:bg-indigo-600; }
+    .nav-link { @apply px-2 py-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-between cursor-pointer; }
+    .nav-link-active { @apply bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 font-medium; }
+    .autocomplete-item { @apply px-2 py-1 cursor-pointer hover:bg-indigo-50 dark:hover:bg-indigo-950 font-mono text-xs; }
+    .autocomplete-item-active { @apply bg-indigo-100 dark:bg-indigo-900; }
+  }
+  .CodeMirror { height: 100%; font-size: 0.8rem; }
+</style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 h-screen overflow-hidden">
+
+<div id="landingRoot" class="h-screen overflow-y-auto hidden"></div>
+
+<div id="appShell" class="flex h-screen hidden">
+
+  <aside class="w-72 shrink-0 h-full overflow-y-auto border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 flex flex-col gap-5">
+    <div>
+      <div class="flex items-center justify-between mb-2">
+        <a id="allProjectsLink" class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer">&larr; All projects</a>
+        <a id="newProjectLink" class="text-xs text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer">+ New</a>
+      </div>
+      <h1 class="text-base font-semibold">FeatureScript Studio</h1>
+      <div id="projectMeta" class="text-xs text-slate-400 mt-0.5"></div>
+      <label class="field-label mt-3">Project URL</label>
+      <div class="flex gap-1">
+        <input id="projectUrlInput" class="field text-xs font-mono" type="text" readonly>
+        <button id="copyUrlBtn" class="btn-secondary text-xs shrink-0">Copy</button>
+      </div>
+      <label class="field-label mt-3">Project name</label>
+      <input id="projectName" class="field font-medium" type="text">
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <button id="validateBtn" class="btn-secondary">Validate</button>
+      <button id="saveBtn" class="btn-secondary">Save (new version)</button>
+      <button id="generateBtn" class="btn-primary">Generate FeatureScript</button>
+    </div>
+
+    <div id="status" class="text-sm rounded-md px-2 py-1.5 hidden"></div>
+
+    <div class="flex-1 min-h-0 flex flex-col">
+      <nav id="mainNav" class="flex flex-col gap-0.5 text-sm"></nav>
+      <h2 class="field-label mt-3 mb-1">Component groups</h2>
+      <nav id="groupNav" class="flex flex-col gap-0.5 text-sm overflow-y-auto"></nav>
+      <button id="addGroupBtn" class="btn-ghost mt-3 text-xs">+ Add component group</button>
+    </div>
+  </aside>
+
+  <main id="main" class="flex-1 min-w-0 h-full overflow-hidden flex flex-col p-6"></main>
+
+</div>
+
+<div id="modalBackdrop" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-6 z-50">
+  <div class="card w-full max-w-5xl max-h-[85vh] overflow-hidden flex flex-col"></div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
