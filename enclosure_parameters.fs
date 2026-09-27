@@ -34,10 +34,10 @@ const ENCLOSURE_PARAMETER_META = [
     },
     {
         "group" : "Enclosure",
-        "name" : "floor",
-        "label" : "Floor thickness",
+        "name" : "front_wall",
+        "label" : "Front wall thickness",
         "kind" : "Input",
-        "description" : "Base or floor thickness."
+        "description" : "Thickness of the case's front face, directly behind the display window."
     },
     {
         "group" : "Enclosure",
@@ -73,6 +73,13 @@ const ENCLOSURE_PARAMETER_META = [
         "label" : "PCB clearance",
         "kind" : "Input",
         "description" : "Clearance around the PCB perimeter."
+    },
+    {
+        "group" : "PCB",
+        "name" : "pcb_assembled_height",
+        "label" : "PCB assembled height",
+        "kind" : "Input",
+        "description" : "Height of the PCB with components soldered on, used for case depth (pcb_thickness is the bare board only)."
     },
     {
         "group" : "PCB",
@@ -341,27 +348,6 @@ const ENCLOSURE_PARAMETER_META = [
         "description" : "Calculated USB C enclosure opening height."
     },
     {
-        "group" : "Case",
-        "name" : "case_width",
-        "label" : "Case width",
-        "kind" : "Derived",
-        "description" : "Calculated outside case width from the largest internal component footprint."
-    },
-    {
-        "group" : "Case",
-        "name" : "case_height",
-        "label" : "Case height",
-        "kind" : "Derived",
-        "description" : "Calculated outside case height from the largest internal component footprint."
-    },
-    {
-        "group" : "Case",
-        "name" : "case_depth",
-        "label" : "Case depth",
-        "kind" : "Input",
-        "description" : "Outside case depth. Kept as an input until the internal stack is defined."
-    },
-    {
         "group" : "Lid",
         "name" : "lid_depth",
         "label" : "Lid depth",
@@ -381,6 +367,27 @@ const ENCLOSURE_PARAMETER_META = [
         "label" : "Lid lip clearance",
         "kind" : "Derived",
         "description" : "Calculated lid lip clearance using the general enclosure clearance."
+    },
+    {
+        "group" : "Case",
+        "name" : "case_width",
+        "label" : "Case width",
+        "kind" : "Derived",
+        "description" : "Calculated outside case width from the largest internal component footprint."
+    },
+    {
+        "group" : "Case",
+        "name" : "case_height",
+        "label" : "Case height",
+        "kind" : "Derived",
+        "description" : "Calculated outside case height from the largest internal component footprint."
+    },
+    {
+        "group" : "Case",
+        "name" : "case_depth",
+        "label" : "Case depth",
+        "kind" : "Derived",
+        "description" : "Calculated case depth: front wall, display, PCB (assembled), battery, then the lid lip and lid. Buttons and SD card sit on the PCB and don't add depth; the speaker sits beside the PCB, not in the stack."
     },
     {
         "group" : "Fasteners",
@@ -418,12 +425,13 @@ export const enclosureParameters = defineFeature(function(context is Context, id
         setVariable(context, "press_fit_clearance", 0.1 * millimeter, "Clearance used for press fit features.");
         setVariable(context, "cutout_clearance", 0.2 * millimeter, "Default clearance added around external openings.");
         setVariable(context, "wall", 2 * millimeter, "Main enclosure wall thickness.");
-        setVariable(context, "floor", 2 * millimeter, "Base or floor thickness.");
+        setVariable(context, "front_wall", 2 * millimeter, "Thickness of the case's front face, directly behind the display window.");
         setVariable(context, "corner_radius", 6 * millimeter, "Outside enclosure corner radius.");
         setVariable(context, "pcb_width", 34.2 * millimeter, "Overall PCB width.");
         setVariable(context, "pcb_height", 47.7 * millimeter, "Overall PCB height.");
         setVariable(context, "pcb_thickness", 1 * millimeter, "Bare PCB substrate thickness (assembled stack with components is approximately 12mm).");
         setVariable(context, "pcb_clearance", 0.2 * millimeter, "Clearance around the PCB perimeter.");
+        setVariable(context, "pcb_assembled_height", 12 * millimeter, "Height of the PCB with components soldered on, used for case depth (pcb_thickness is the bare board only).");
         setVariable(context, "pcb_notch_width", 22 * millimeter, "Width of the PCB locating or access notch.");
         setVariable(context, "pcb_notch_height", 5.7 * millimeter, "Height of the PCB locating or access notch.");
         setVariable(context, "display_width", 31.8 * millimeter, "Overall physical display module width.");
@@ -462,12 +470,12 @@ export const enclosureParameters = defineFeature(function(context is Context, id
         setVariable(context, "usb_clearance", 0.1 * millimeter, "Clearance around the USB C opening.");
         setVariable(context, "usb_cutout_width", 9.7 * millimeter, "Calculated USB C enclosure opening width.");
         setVariable(context, "usb_cutout_height", 3.9000000000000004 * millimeter, "Calculated USB C enclosure opening height.");
-        setVariable(context, "case_width", 39.0 * millimeter, "Calculated outside case width from the largest internal component footprint.");
-        setVariable(context, "case_height", 54.4 * millimeter, "Calculated outside case height from the largest internal component footprint.");
-        setVariable(context, "case_depth", 0 * millimeter, "Outside case depth. Kept as an input until the internal stack is defined.");
         setVariable(context, "lid_depth", 2.5 * millimeter, "Overall lid thickness or depth.");
         setVariable(context, "lid_lip_depth", 1 * millimeter, "Depth of the locating lip extending into the case.");
         setVariable(context, "lid_lip_clearance", 0.1 * millimeter, "Calculated lid lip clearance using the general enclosure clearance.");
+        setVariable(context, "case_width", 39.0 * millimeter, "Calculated outside case width from the largest internal component footprint.");
+        setVariable(context, "case_height", 54.4 * millimeter, "Calculated outside case height from the largest internal component footprint.");
+        setVariable(context, "case_depth", 31.5 * millimeter, "Calculated case depth: front wall, display, PCB (assembled), battery, then the lid lip and lid. Buttons and SD card sit on the PCB and don't add depth; the speaker sits beside the PCB, not in the stack.");
         setVariable(context, "screw_diameter", 2 * millimeter, "Nominal screw diameter.");
         setVariable(context, "screw_boss_diameter", 4.3 * millimeter, "Outside diameter of a screw mounting boss.");
         setVariable(context, "screw_boss_height", 3.7 * millimeter, "Height of a screw mounting boss.");
