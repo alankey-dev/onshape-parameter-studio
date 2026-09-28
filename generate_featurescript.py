@@ -247,6 +247,33 @@ def evaluate_config(config: dict[str, Any]) -> dict[str, float]:
     return resolve_values(params)
 
 
+def dependency_graph(config: dict[str, Any]) -> dict[str, Any]:
+    """Describe every parameter, what it depends on, and its resolved value.
+
+    Used by the browser editor's impact map. Nodes keep the config's order so
+    callers can group them the same way the editor does.
+    """
+    _, params = parse_config(config)
+    values = resolve_values(params)
+    nodes = []
+    for p in params:
+        deps = sorted(expression_dependencies(p.expression)) if p.derived else []
+        nodes.append(
+            {
+                "name": p.name,
+                "label": p.label,
+                "group": p.group,
+                "kind": "derived" if p.derived else "input",
+                "unit": p.unit,
+                "expression": p.expression,
+                "deps": deps,
+                "min": p.minimum,
+                "max": p.maximum,
+            }
+        )
+    return {"nodes": nodes, "values": values}
+
+
 def emit_expression(expression: str, inputs: set[str], derived: set[str]) -> str:
     tree = ast.parse(expression, mode="eval")
 

@@ -316,6 +316,7 @@ function renderNav() {
 
   mainNav.appendChild(navItem("⚙️ Settings", state.view.type === "settings", () => setView({ type: "settings" })));
   mainNav.appendChild(navItem("{ } Raw JSON", state.view.type === "json", () => setView({ type: "json" })));
+  mainNav.appendChild(navItem("🕸 Impact map", state.view.type === "impact", () => setView({ type: "impact" })));
 
   state.config.groups.forEach((group, gIdx) => {
     const isActive = state.view.type === "group" && state.view.index === gIdx;
@@ -338,6 +339,8 @@ function renderMain() {
     main.appendChild(renderSettingsView());
   } else if (state.view.type === "json") {
     main.appendChild(renderJsonView());
+  } else if (state.view.type === "impact") {
+    main.appendChild(renderImpactView());
   } else {
     const group = state.config.groups[state.view.index];
     if (!group) {

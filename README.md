@@ -25,6 +25,7 @@ A small generator + browser editor for turning a JSON parameter schema into an O
 - Normal Part Studio variables such as `#pcb_width`, `#case_width` and `#usb_cutout_width`
 - Derived variables calculated from JSON expressions
 - A read only custom table listing every variable
+- An interactive **Impact map** in the browser editor: a live dependency graph of every parameter, with what-if scrubbing that shows how a change ripples through the derived values before you commit it
 
 The tool itself is project-agnostic; `enclosure.json` / `enclosure_parameters.fs` in this repo are a worked example (an ESP32 e-ink enclosure).
 
@@ -66,6 +67,7 @@ Opens a local, JSFiddle-style multi-project editor (default `http://127.0.0.1:87
 - **Validate** checks the current in-memory config. **Save (new version)** validates and writes it as a new, immutable version (the URL moves to the new version number — nothing is overwritten). **Generate FeatureScript** validates, writes the output file into that project's folder on disk, and shows the generated script in a modal for copying into Onshape.
 - Each group is a dense table (Name / Label / Kind / Value or Expression / Unit) with resizable columns. Clicking a row's expression cell or its pencil icon opens a modal to edit that parameter's value/expression (with autocomplete, live validation and a live computed value), description, and — if the Onshape dialog is enabled (see below) — its min/max bounds.
 - A raw JSON tab (CodeMirror) applies back into the form when you switch away from it, or when you click Validate/Save/Generate while it's open.
+- The **Impact map** tab draws every parameter as a node, with inputs on the left and each derived value to the right of everything it depends on (colour-coded by group). Click a node to trace what feeds it (amber) and what it feeds (indigo), and to see its expression with the current values substituted in. Pick an input and drag its slider to run a what-if: every affected node shows its new value and delta live, ranked in the side panel by how much it moved, without touching the project. **Apply to project** writes the scrubbed values into the form (then Save as usual); **Discard** throws them away. Parameters that no expression references yet are hidden behind a "Show unlinked" toggle; scroll to zoom and drag to pan.
 - Projects are stored under `projects/<slug>/versions/<n>.json` on disk. On first run, an existing `enclosure.json` in this folder is migrated in automatically as the first project.
 
 By default the generated FeatureScript has no editable dialog in Onshape — it's a feature that just sets each variable to the value resolved here in the browser. Check **"Generate an editable Onshape dialog"** in the Settings tab if you want the old behaviour instead (sliders with min/max bounds you can tweak directly inside Onshape); that also brings back the per-group "collapsed in Onshape" setting and per-parameter Min/Max, tucked under an "Advanced" disclosure since they only matter in that mode.

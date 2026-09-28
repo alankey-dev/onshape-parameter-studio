@@ -81,5 +81,11 @@ class ProjectStorageTests(unittest.TestCase):
         self.assertEqual(projects[0]["slug"], slug)
 
 
+class StaticRouteTests(unittest.TestCase):
+    def test_every_static_route_has_a_file(self):
+        for name in webapp.STATIC_ROUTES:
+            self.assertTrue((webapp.STATIC_DIR / name).is_file(), name)
+
+
 if __name__ == "__main__":
     unittest.main()
