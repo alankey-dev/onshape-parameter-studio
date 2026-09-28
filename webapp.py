@@ -23,6 +23,11 @@ ROOT = Path(__file__).resolve().parent
 STATIC_DIR = ROOT / "static"
 PROJECTS_DIR = ROOT / "projects"
 
+STATIC_ROUTES = {
+    "app.js": "application/javascript",
+    "impact.js": "application/javascript",
+}
+
 ID_ALPHABET = string.ascii_lowercase + string.digits
 ID_LENGTH = 8
 
@@ -184,8 +189,8 @@ class Handler(BaseHTTPRequestHandler):
                 )
             else:
                 self.send_error(404)
-        elif parts == ["app.js"]:
-            self._serve_static("app.js", "application/javascript")
+        elif len(parts) == 1 and parts[0] in STATIC_ROUTES:
+            self._serve_static(parts[0], STATIC_ROUTES[parts[0]])
         else:
             # SPA fallback: "/", "/<slug>" and "/<slug>/<version>" all serve the same page.
             self._serve_static("index.html", "text/html")
@@ -217,6 +222,8 @@ class Handler(BaseHTTPRequestHandler):
             self._handle_validate_expression()
         elif parts == ["api", "evaluate"]:
             self._handle_evaluate()
+        elif parts == ["api", "graph"]:
+            self._handle_graph()
         else:
             self.send_error(404)
 
@@ -272,6 +279,15 @@ class Handler(BaseHTTPRequestHandler):
             self._send_json(200, {"ok": False, "error": str(exc)})
             return
         self._send_json(200, {"ok": True, "values": values})
+
+    def _handle_graph(self) -> None:
+        payload = self._read_json()
+        try:
+            graph = gen.dependency_graph(payload.get("config", {}))
+        except (ValueError, KeyError, TypeError, ZeroDivisionError) as exc:
+            self._send_json(200, {"ok": False, "error": str(exc)})
+            return
+        self._send_json(200, {"ok": True, **graph})
 
     def _handle_validate(self) -> None:
         payload = self._read_json()

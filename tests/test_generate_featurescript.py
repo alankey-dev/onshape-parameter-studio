@@ -234,5 +234,41 @@ class GenerateTests(unittest.TestCase):
             gen.generate(config, [])
 
 
+class DependencyGraphTests(unittest.TestCase):
+    def test_graph_lists_dependencies_kinds_and_values(self):
+        config = make_config([
+            {
+                "name": "Case",
+                "parameters": [
+                    {"name": "wall", "value": 2},
+                    {"name": "clearance", "value": 0.5, "unit": "cm"},
+                    {"name": "opening", "expression": "wall * 2 + clearance"},
+                    {"name": "outer", "expression": "max(opening, wall) + 1"},
+                ],
+            }
+        ])
+        graph = gen.dependency_graph(config)
+        nodes = {node["name"]: node for node in graph["nodes"]}
+        self.assertEqual([node["name"] for node in graph["nodes"]], ["wall", "clearance", "opening", "outer"])
+        self.assertEqual(nodes["wall"]["kind"], "input")
+        self.assertEqual(nodes["wall"]["deps"], [])
+        self.assertEqual(nodes["clearance"]["unit"], "cm")
+        self.assertEqual(nodes["opening"]["kind"], "derived")
+        self.assertEqual(nodes["opening"]["deps"], ["clearance", "wall"])
+        self.assertEqual(nodes["opening"]["expression"], "wall * 2 + clearance")
+        # max() is a call, not a dependency
+        self.assertEqual(nodes["outer"]["deps"], ["opening", "wall"])
+        self.assertEqual(nodes["outer"]["group"], "Case")
+        self.assertEqual((nodes["wall"]["min"], nodes["wall"]["max"]), (0, 1000))
+        self.assertEqual(graph["values"], {"wall": 2, "clearance": 0.5, "opening": 4.5, "outer": 5.5})
+
+    def test_graph_rejects_invalid_config(self):
+        config = make_config([
+            {"name": "Case", "parameters": [{"name": "wall", "expression": "missing + 1"}]}
+        ])
+        with self.assertRaisesRegex(ValueError, "unknown variable"):
+            gen.dependency_graph(config)
+
+
 if __name__ == "__main__":
     unittest.main()
